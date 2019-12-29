@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>mav2csv</title>
+</head>
+
+<body>
+    <input type="file" id="file-input" accept=".tlog"/>
+    <script src="mav2csv.js"></script>
+    <script>
+        var fileReader = new FileReader();
+        fileReader.onloadend = e => Rust.mav2csv
+            .then(reader => {
+                reader.run(fileReader);
+            });
+
+        var fileInputElement = document.getElementById("file-input");
+        fileInputElement.addEventListener("change", e => fileReader.readAsArrayBuffer(fileInputElement.files[0]));
+
+        function download(data, name) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/text;charset=utf-8,' + encodeURI(data));
+            element.setAttribute('download', name);
+            element.click();
+        }
+    </script>
+</body>
+
+</html>
