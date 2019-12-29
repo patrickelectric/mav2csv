@@ -1,0 +1,42 @@
+dist: xenial
+language: rust
+sudo: required
+
+env:
+  global:
+    - CRATE_NAME=mav2csv
+
+branches:
+  only:
+  - master
+
+before_install:
+  - set -e
+  - rustup self update
+
+install:
+  - cargo install -f cargo-web
+  - cargo web deploy --verbose --release
+  - cp -r target/deploy $CRATE_NAME
+  - rm -rf target
+
+script:
+- if [ "$TRAVIS_BRANCH" == "master" ]; then
+    git remote set-url origin https://${GITHUB_TOKEN}@github.com/patrickelectric/mav2csv;
+    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*";
+    git fetch --all;
+    git config --global user.name "Patrick José Pereira";
+    git config --global user.email "patrickelectric@gmail.com";
+    git checkout --track origin/gh-pages;
+    mv $CRATE_NAME/* .;
+    rm -rf $CRATE_NAME;
+    git add --all;
+    git commit -sm "Update WebAssembly";
+  fi
+
+after_success:
+- if [ "$TRAVIS_BRANCH" != "master" ]; then
+    echo "$TRAVIS_BRANCH is not master, deploy will not be done.";
+    exit 0;
+  fi
+- git push origin gh-pages;
